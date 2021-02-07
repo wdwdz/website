@@ -1,5 +1,5 @@
 ---
-title: "index.rmd"
+title: "Survey data visulization"
 output: html_document
 ---
 
@@ -7,22 +7,28 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Workflow
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+This is a workflow of analyzing survey data from Qualtrics. When exporting data from Qualtrics, make sure to select "Use choice text" and "Split multi-value fields into columns" and export the data as csv file. 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+After downloading the file, open it and delete the first **two rows** of the raw data. Now you should have the spreadsheet with only one row as its head. This will give convenience to further data wrangling in R. 
 
-```{r cars}
-summary(cars)
+## Import useful libraries and read the raw data to R
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+raw<-read_csv("rawdata2.csv")
+names(raw)<-str_replace_all(names(raw), c("#" = "."))
+colnames(raw)[5]<-"Duration"
+colnames(raw)[9]<-"Distribution"
+raw$StartDate<-as.Date(raw$StartDate,format='%m/%d/%y')
 ```
 
-## Including Plots
+## Filter the valid sample by progress, distribution, duration and startdate
+```{r}
+raw<-raw[raw$StartDate>"2020-11-23",]
+raw<-raw[raw$Progress>70 & raw$Duration>180 & raw$Distribution != "preview",]
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
