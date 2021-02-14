@@ -57,8 +57,13 @@ Q2.3<- raw %>%
   mutate(river=ifelse(is.na(Q2.3_10),0,1)) %>% 
   mutate(lake=ifelse(is.na(Q2.3_11),0,1)) %>% 
   mutate(none=ifelse(is.na(Q2.3_14),0,1)) %>% 
+  mutate(other=ifelse(is.na(Q2.3_14),0,1)) %>% 
   select(-contains("Q2.3")) %>% 
-  mutate(access.score=private+deck+public+botanical+nature+woodland+river+lake)
+  mutate(access.score=private+deck+public+botanical+nature+woodland+river+lake+other)
+Q2.3<-Q2.3 %>% 
+  mutate(outdoorsathome=private+deck) %>% 
+  mutate(outdoorsnearhome=(public+botanical+nature+woodland+river+lake+other)) %>% 
+  mutate(divesitynearhome=ifelse(outdoorsnearhome>=3,1,0))
 
 #Q2.4 nature use type before and after
 Q2.4.before<- raw %>% 
@@ -264,12 +269,41 @@ Q7.7_access<- Q7.7_access %>%
                                               "Suburb or just outside an urban center (e.g, Cayuga Heights, East Ithaca)" = 3,
                                               "Small town or village (e.g., Trumansburg, Lansing)" = 2,
                                               "Rural area" = 1))
+
+# Q7.8 – Ethnicity / race
+Q7.8<- raw %>% 
+  select(contains( "Q7.8")) %>% 
+  mutate(race2=case_when(is.na(Q7.8_1)==FALSE | is.na(Q7.8_2)==FALSE | is.na(Q7.8_3)==FALSE ~ "1",
+                           is.na(Q7.8_4)==FALSE | is.na(Q7.8_5)==FALSE ~ "2",
+                           is.na(Q7.8_6)==FALSE  ~ "3",
+                           is.na(Q7.8_7)==FALSE  ~ "4",
+                           is.na(Q7.8_8)==FALSE ~ "NA")) %>% 
+  mutate(race1=case_when(is.na(Q7.8_1)==FALSE ~ "1",
+                         is.na(Q7.8_2)==FALSE~ "2",
+                         is.na(Q7.8_3)==FALSE~ "3",
+                        is.na(Q7.8_4)==FALSE  ~ "4",
+                        is.na(Q7.8_5)==FALSE~ "5",
+                        is.na(Q7.8_6)==FALSE  ~ "6",
+                        is.na(Q7.8_7)==FALSE  ~ "7",
+                        is.na(Q7.8_8)==FALSE ~ "NA")) %>% 
+  select(-contains("Q7.8")) %>% 
+  mutate_if(is.character, as.factor)
+
 ```
 ## 3 we visulize some basic data
 ```{r warning=FALSE}
 Q2.3 %>% 
   ggplot(mapping = aes(x=as.factor(access.score))) +
   geom_bar(stat="count",position='dodge')
+Q2.3 %>% 
+  ggplot(mapping = aes(x=as.factor(outdoorsathome))) +
+  geom_bar(stat="count",position='dodge') 
+Q2.3 %>% 
+  ggplot(mapping = aes(x=as.factor(outdoorsnearhome))) +
+  geom_bar(stat="count",position='dodge') 
+Q2.3 %>% 
+  ggplot(mapping = aes(x=as.factor(divesitynearhome))) +
+  geom_bar(stat="count",position='dodge') 
 
 timeoutdoors %>% 
   ggplot(mapping = aes(x=as.factor(Q2.7))) +
@@ -532,12 +566,15 @@ ltm::rcor.test(df.cor,use="pairwise.complete.obs")
 #                    ORDINAL AND NORMINAL
 #                    NORMINAL AND NORMINAL
 #1. CHI-2 TEST CAN BE USED
-# We test 
+# We check space use and space access
 
 df.chi<-Q2.3 %>% 
-  select(access.score) %>% 
+  select(access.score,outdoorsathome,outdoorsnearhome,divesitynearhome) %>% 
   mutate(access.score=as.factor(access.score)) %>% 
   rename(access=access.score) %>% 
+  mutate(outdoorsathome=as.factor(outdoorsathome)) %>% 
+  mutate(outdoorsnearhome=as.factor(outdoorsnearhome)) %>% 
+  mutate(divesitynearhome=as.factor(divesitynearhome)) %>% 
   cbind("use.types.before"=as.factor(Q2.4.score$use.score.before)) %>% 
   cbind("use.types.after"=as.factor(Q2.4.score$use.score.after)) %>% 
   cbind("neighborhood"=as.factor(raw$Q7.7)) %>% 
@@ -548,19 +585,53 @@ df.chi<-Q2.3 %>%
   cbind("use.companions.before"= as.factor(Q3.3$total_before)) %>% 
   cbind("use.companions.after"= as.factor(Q3.3$total_during)) %>%
   cbind("time.daysperweek"=as.factor(raw$Q2.5)) %>% 
-  cbind("time.hourspertime"=as.factor(raw$Q2.6))
+  cbind("time.hourspertime"=as.factor(raw$Q2.6)) %>% 
+  cbind("race1"=Q7.8$race1) %>% 
+  cbind("race2"=Q7.8$race2)
   
   
 #access  
 mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -1], MoreArgs=list(df.chi[,1]))
-#neighborhood
+#outdoorsathome
+mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -2], MoreArgs=list(df.chi[,2]))
+#outdoorsnearhome
+mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -3], MoreArgs=list(df.chi[,3]))
+#divesitynearhome
 mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -4], MoreArgs=list(df.chi[,4]))
+#neighborhood
+mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -7], MoreArgs=list(df.chi[,7]))
 #gender
-mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -5], MoreArgs=list(df.chi[,5]))
+mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -8], MoreArgs=list(df.chi[,8]))
 #time week
-mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -11], MoreArgs=list(df.chi[,11]))
+mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -14], MoreArgs=list(df.chi[,14]))
 #time hour
-mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -12], MoreArgs=list(df.chi[,12]))
+mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -15], MoreArgs=list(df.chi[,15]))
+
+# We check work/campus based space use
+
+df.chi2<-Q5.6 %>% 
+  select(total_campusoutdoors) %>% 
+  mutate(total_campusoutdoors=as.factor(total_campusoutdoors)) %>% 
+  cbind("timeinworkday"=as.factor(raw$Q5.2)) %>% 
+  cbind("use.types.before"=as.factor(Q2.4.score$use.score.before)) %>% 
+  cbind("use.types.after"=as.factor(Q2.4.score$use.score.after)) %>% 
+  cbind("neighborhood"=as.factor(raw$Q7.7)) %>% 
+  cbind("gender"= as.factor(raw$Q7.2)) %>% 
+  cbind("workyear"= as.factor(raw$Q7.3)) %>% 
+  cbind("use.activities.before"= as.factor(Q3.2$total_before)) %>% 
+  cbind("use.activities.after"= as.factor(Q3.2$total_during)) %>% 
+  cbind("use.companions.before"= as.factor(Q3.3$total_before)) %>% 
+  cbind("use.companions.after"= as.factor(Q3.3$total_during)) %>%
+  cbind("time.daysperweek"=as.factor(raw$Q2.5)) %>% 
+  cbind("time.hourspertime"=as.factor(raw$Q2.6)) %>% 
+  cbind("race1"=Q7.8$race1) %>% 
+  cbind("race2"=Q7.8$race2)
+
+#total_campusoutdoors
+mapply(function(x, y) chisq.test(x, y)$p.value, df.chi2[, -1], MoreArgs=list(df.chi2[,1]))
+#timeinworkday
+mapply(function(x, y) chisq.test(x, y)$p.value, df.chi2[, -2], MoreArgs=list(df.chi2[,2]))
+
 
 #2. TO CALCULATE THE COEFFICIENT: 
 # Q2
