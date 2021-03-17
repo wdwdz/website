@@ -28,6 +28,8 @@ After downloading the file, open it and delete the first **two rows** of the raw
 
 ```{r}
 library(tidyverse)
+library(vcd)
+library(vcdExtra)
 
 raw<-read_csv("rawdata2.csv")
 names(raw)<-str_replace_all(names(raw), c("#" = "."))
@@ -424,33 +426,33 @@ Q2.4.score %>%
   guides(fill=guide_legend(title="Time"))+ 
   ggtitle("Plot of total types of place use before and after COVID")
 
-Q2.4.before<-Q2.4.before %>% 
-  pivot_longer(private:none,
-               names_to = "place",
-               values_to = "use") %>% 
-  group_by(place) %>%
-  summarise(se = sd(use)/sqrt(483),total = sum(use)) %>% 
-  mutate(time="before")
+#Q2.4.before<-Q2.4.before %>% 
+#  pivot_longer(private:none,
+#               names_to = "place",
+#               values_to = "use") %>% 
+#  group_by(place) %>%
+#  summarise(se = sd(use)/sqrt(483),total = sum(use)) %>% 
+#  mutate(time="before")
 
-Q2.4.after<-Q2.4.after %>% 
-  pivot_longer(private:none,
-               names_to = "place",
-               values_to = "use") %>% 
-  group_by(place) %>%
-  summarise(se = sd(use)/sqrt(483),total = sum(use)) %>% 
-  mutate(time="after")
+#Q2.4.after<-Q2.4.after %>% 
+#  pivot_longer(private:none,
+#               names_to = "place",
+#               values_to = "use") %>% 
+#  group_by(place) %>%
+#  summarise(se = sd(use)/sqrt(483),total = sum(use)) %>% 
+#  mutate(time="after")
 
-Q2.4.sum<-rbind(Q2.4.before,Q2.4.after)
-levels<-unique(Q2.4.sum$place)
-Q2.4.sum$place<-factor(Q2.4.sum$place,levels = c("botanical","deck","lake","nature","private","public","river","woodland","none"))
-Q2.4.sum %>% 
-  ggplot(mapping = aes(x=place,y=total/483,fill=factor(time,levels = c("before","after")))) +
-  geom_bar(stat="identity",position='dodge')+
-  geom_errorbar(aes(ymin=total/483-se, ymax=total/483+se), width=.5,
-                position=position_dodge(.9)) +
-  ylab("proportion")+
-  guides(fill=guide_legend(title="Time"))+ 
-  ggtitle("Plot of place use before and after COVID")
+#Q2.4.sum<-rbind(Q2.4.before,Q2.4.after)
+#levels<-unique(Q2.4.sum$place)
+#Q2.4.sum$place<-factor(Q2.4.sum$place,levels = c("botanical","deck","lake","nature","private","public","river","woodland","none"))
+#Q2.4.sum %>% 
+#  ggplot(mapping = aes(x=place,y=total/483,fill=factor(time,levels = c("before","after")))) +
+#  geom_bar(stat="identity",position='dodge')+
+#  geom_errorbar(aes(ymin=total/483-se, ymax=total/483+se), width=.5,
+#                position=position_dodge(.9)) +
+#  ylab("proportion")+
+#  guides(fill=guide_legend(title="Time"))+ 
+#  ggtitle("Plot of place use before and after COVID")
 
 ###Let's focus on the change: who change most after covid?
 Q2.4.score %>% 
@@ -588,7 +590,8 @@ df.chi<-Q2.3 %>%
   cbind("time.hourspertime"=as.factor(raw$Q2.6)) %>% 
   cbind("race1"=Q7.8$race1) %>% 
   cbind("race2"=Q7.8$race2)
-  
+
+
   
 #access  
 mapply(function(x, y) chisq.test(x, y)$p.value, df.chi[, -1], MoreArgs=list(df.chi[,1]))
@@ -701,5 +704,71 @@ psy::cronbach(Q4.4[,1:3])
 
 
 ```
+## 9 Below are answers to specific questions
+c.	Does access (multiple variables) correlate with type of home setting (Q7.7)
 
+The column mean s are calculated by assigning interger scores, i.e. access score is ordinary.
+It means the access score are correlated with the neighborhood types.
+
+
+```{r}
+Q1<-xtabs(~access.score + Q7.7,data=Q7.7_access)
+write.table(Q1,file = "ctable_access_neighbor.csv",row.names = TRUE,sep=",")
+CMHtest(Q1)
+
+```
+
+
+i.	 is access a moderator b/w use or time outdoors and neighborhood type
+
+```{r}
+df.chi<- df.chi %>% 
+    cbind("neighbortype"=as.factor(Q7.7_access$Q7.7)) 
+Q2<-xtabs(~neighbortype+time.daysperweek+access,data = df.chi)
+write.table(Q2,file = "ctable_time_neighbor_access.csv",row.names = TRUE,sep=",")
+Q2_gender<-xtabs(~neighbortype+time.daysperweek+gender,data = df.chi)
+assocstats(Q2_gender)
+
+
+```
+
+
+d.	Does access at or near home OR diversity of spaces near home correlate to TOTAL TIME outdoors (in any of the 3 time periods) 
+```{r}
+
+```
+
+e.	Access change pre to post covid – within subjects and across subjects 
+```{r}
+
+```
+a.	Does access relate to use (Q2.4) – correlation between TOTAL TIME outdoors (Fall 2020) and: [TABLE]
+i.	Total number of spaces they can access (ACCESS TOTAL from Q2.3)
+ii.	Whether they have space ‘at home’ (new variable)
+iii.	Total number of spaces ‘outdoors near home’ (new variable)
+iv.	Whether they have 3 or more spaces outdoors near home (diversity near home - new variable) 
+```{r}
+
+```
+b.	Compare each above to time outdoors since covid emerged (Q2.8) and in Fall 2019 (Q2.10)
+```{r}
+
+```
+c.	Does use (ie time outdoors) correlate with any of the following: [TABLE]
+i.	Gender (Q7.2)
+ii.	Neighborhood type (Q7.7)
+iii.	Race (7.8)
+iv.	Race category (new variable from 7.8)
+v.	HOME BARRIERS TOTAL (new variable)
+vi.	People in the household : HOUSEHOLD TOTAL, CHILDREN, SENIORS or FAMILY
+vii.	TOTAL COMPANIONS
+viii.	FEEL ABOUT NATURE TOTAL
+ix.	FEEL AFTER NATURE TOTAL 
+```{r}
+
+```
+d.	Changes in use of spaces pre to post covid – within and across subjects
+```{r}
+
+```
 

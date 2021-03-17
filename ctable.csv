@@ -1,0 +1,13 @@
+"Treatment","Improved","Sex","Freq"
+"Placebo","None","Female",19
+"Treated","None","Female",6
+"Placebo","Some","Female",7
+"Treated","Some","Female",5
+"Placebo","Marked","Female",6
+"Treated","Marked","Female",16
+"Placebo","None","Male",10
+"Treated","None","Male",7
+"Placebo","Some","Male",0
+"Treated","Some","Male",2
+"Placebo","Marked","Male",1
+"Treated","Marked","Male",5
