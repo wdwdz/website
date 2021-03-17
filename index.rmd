@@ -713,7 +713,7 @@ It means the access score are correlated with the neighborhood types.
 
 ```{r}
 Q1<-xtabs(~access.score + Q7.7,data=Q7.7_access)
-write.table(Q1,file = "ctable_access_neighbor.csv",row.names = TRUE,sep=",")
+#write.table(Q1,file = "ctable_access_neighbor.csv",row.names = TRUE,sep=",")
 CMHtest(Q1)
 
 ```
@@ -725,7 +725,7 @@ i.	 is access a moderator b/w use or time outdoors and neighborhood type
 df.chi<- df.chi %>% 
     cbind("neighbortype"=as.factor(Q7.7_access$Q7.7)) 
 Q2<-xtabs(~neighbortype+time.daysperweek+access,data = df.chi)
-write.table(Q2,file = "ctable_time_neighbor_access.csv",row.names = TRUE,sep=",")
+#write.table(Q2,file = "ctable_time_neighbor_access.csv",row.names = TRUE,sep=",")
 Q2_gender<-xtabs(~neighbortype+time.daysperweek+gender,data = df.chi)
 assocstats(Q2_gender)
 
