@@ -15,7 +15,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ## Workflow
@@ -30,6 +30,7 @@ After downloading the file, open it and delete the first **two rows** of the raw
 library(tidyverse)
 library(vcd)
 library(vcdExtra)
+library(gmodels) #SPSS tables
 
 raw<-read_csv("rawdata2.csv")
 names(raw)<-str_replace_all(names(raw), c("#" = "."))
@@ -42,6 +43,7 @@ raw$StartDate<-as.Date(raw$StartDate,format='%m/%d/%y')
 ```{r}
 raw<-raw[raw$StartDate>"2020-11-23",]
 raw<-raw[raw$Progress>70 & raw$Duration>180 & raw$Distribution != "preview",]
+raw0<-raw
 
 ```
 
@@ -426,33 +428,34 @@ Q2.4.score %>%
   guides(fill=guide_legend(title="Time"))+ 
   ggtitle("Plot of total types of place use before and after COVID")
 
-#Q2.4.before<-Q2.4.before %>% 
-#  pivot_longer(private:none,
-#               names_to = "place",
-#               values_to = "use") %>% 
-#  group_by(place) %>%
-#  summarise(se = sd(use)/sqrt(483),total = sum(use)) %>% 
-#  mutate(time="before")
+Q2.4.before<-Q2.4.before %>% 
+  pivot_longer(private:none,
+               names_to = "place",
+               values_to = "use") %>% 
+  group_by(place) %>%
+  dplyr::summarise(se = sd(use)/sqrt(483),total = sum(use)) %>% 
+  mutate(time="before")
 
-#Q2.4.after<-Q2.4.after %>% 
-#  pivot_longer(private:none,
-#               names_to = "place",
-#               values_to = "use") %>% 
-#  group_by(place) %>%
-#  summarise(se = sd(use)/sqrt(483),total = sum(use)) %>% 
-#  mutate(time="after")
 
-#Q2.4.sum<-rbind(Q2.4.before,Q2.4.after)
-#levels<-unique(Q2.4.sum$place)
-#Q2.4.sum$place<-factor(Q2.4.sum$place,levels = c("botanical","deck","lake","nature","private","public","river","woodland","none"))
-#Q2.4.sum %>% 
-#  ggplot(mapping = aes(x=place,y=total/483,fill=factor(time,levels = c("before","after")))) +
-#  geom_bar(stat="identity",position='dodge')+
-#  geom_errorbar(aes(ymin=total/483-se, ymax=total/483+se), width=.5,
-#                position=position_dodge(.9)) +
-#  ylab("proportion")+
-#  guides(fill=guide_legend(title="Time"))+ 
-#  ggtitle("Plot of place use before and after COVID")
+Q2.4.after<-Q2.4.after %>% 
+  pivot_longer(private:none,
+               names_to = "place",
+               values_to = "use") %>% 
+  group_by(place) %>%
+  dplyr::summarise(se = sd(use)/sqrt(483),total = sum(use)) %>% 
+  mutate(time="after")
+
+Q2.4.sum<-rbind(Q2.4.before,Q2.4.after)
+levels<-unique(Q2.4.sum$place)
+Q2.4.sum$place<-factor(Q2.4.sum$place,levels = c("botanical","deck","lake","nature","private","public","river","woodland","none"))
+Q2.4.sum %>% 
+  ggplot(mapping = aes(x=place,y=total/483,fill=factor(time,levels = c("before","after")))) +
+  geom_bar(stat="identity",position='dodge')+
+  geom_errorbar(aes(ymin=total/483-se, ymax=total/483+se), width=.5,
+                position=position_dodge(.9)) +
+  ylab("proportion")+
+  guides(fill=guide_legend(title="Time"))+ 
+  ggtitle("Plot of place use before and after COVID")
 
 ###Let's focus on the change: who change most after covid?
 Q2.4.score %>% 
@@ -705,56 +708,228 @@ psy::cronbach(Q4.4[,1:3])
 
 ```
 ## 9 Below are answers to specific questions
-c.	Does access (multiple variables) correlate with type of home setting (Q7.7)
 
-The column mean s are calculated by assigning interger scores, i.e. access score is ordinary.
-It means the access score are correlated with the neighborhood types.
+Cochran-Mantel-Haenszel statistics (Landis etal., 1978)
+a. CMH correlation statistic ("cor"), treating both factors as ordered. For a given statum, with equally spaced row and column scores, this CMH statistic reduces to (n-1) r^2, where r is the Pearson correlation between X and Y. With "midrank" scores, this CMH statistic is analogous to (n-1) r_S^2, using the Spearman rank correlation.
+b. The ANOVA (row mean scores and column mean scores) statistics, treat the columns and rows respectively as ordinal, and are sensitive to mean shifts over columns or rows. These are transforms of the F statistics from one-way ANOVAs with equally spaced scores and to Kruskal-Wallis tests with "midrank" scores.
+c. general association statistic treat both factors as unordered, and give a test closely related to the Pearson χ^2 test. When there is more than one stratum, the overall general CMH statistic gives a stratum-adjusted Pearson χ^2, equivalent to what is calculated by mantelhaen.test.
+When the value in any cell is smaller than 5, Fisher test is recommended. 
 
+For a 3+ way table, one table of CMH tests is produced for each combination of the factors identified as strata. If overall=TRUE, an additional table is calculated for the same two primary variables, controlling for (pooling over) the strata variables.
+
+These overall tests implicitly assume no interactions between the primary variables and the strata and they will have low power in the presence of interactions.
+
+Contigency table
+
+Sieve diagram
+Riedwyl and Schüpbach (1983, 1994) proposed a sieve diagram (later called a parquet diagram ) based on this principle. In this display the area of each rectangle is proportional to expected frequency and observed frequency is shown by the number of squares in each rectangle. Hence, the difference between observed and expected frequency appears as the density of shading, using color to indicate whether the deviation from independence is positive or negative. 
+
+
+# BELOW ARE ANSWERS FOR EACH QUESTION: 
+
+1. ACCESS 
+
+a. What kind of outdoor/natural spaces do people have access to (Q2.3)? 
+b.what quantity and level of diversity (ie higher quantity of spaces) of access do they have Q2.3)?
+
+Access: 
+ACCESS TOTAL – Recode ‘none of the above as 0, rest as ‘1’s – sum  total number of spaces checked off per person
+OUTDOORS AT HOME: Combine ‘private or shared yard’ with ‘deck balcony or patio’ – if answered yes to one of these recode as ‘1’ if answered yes to both recode as ‘2’, if didn’t check either recode as ‘0’
+OUTDOORS NEAR HOME – recode as the number of boxes checked other than the 2 in outdoors at home; if checked ‘other’ count as 1
+DIVERSITY NEAR HOME More than 3 spaces outdoors near home – create a binary category – if checked off 3 or more boxes in the ‘outdoors near home’ group
 
 ```{r}
-Q1<-xtabs(~access.score + Q7.7,data=Q7.7_access)
-#write.table(Q1,file = "ctable_access_neighbor.csv",row.names = TRUE,sep=",")
-CMHtest(Q1)
+Q2.3 %>% 
+  ggplot(mapping = aes(x=as.factor(access.score))) +
+  geom_bar(stat="count",position='dodge')+
+  ggtitle("Accesstotal")
+Q2.3 %>% 
+  ggplot(mapping = aes(x=as.factor(outdoorsathome))) +
+  geom_bar(stat="count",position='dodge') +
+  ggtitle("outdoorsathome")
+Q2.3 %>% 
+  ggplot(mapping = aes(x=as.factor(outdoorsnearhome))) +
+  geom_bar(stat="count",position='dodge') +
+  ggtitle("outdoorsnearhome")
+Q2.3 %>% 
+  ggplot(mapping = aes(x=as.factor(divesitynearhome))) +
+  geom_bar(stat="count",position='dodge')  +
+  ggtitle("diversitynearhome")
 
 ```
 
 
-i.	 is access a moderator b/w use or time outdoors and neighborhood type
+c. Does access (multiple variables) correlate with type of home setting (Q7.7)
+
+outdoorsathome and neighbortype are highly correlated: urban neighborhood and number of types of ourdoorsathome are signifiacantly negative correlated.
+Other correlation relations are not very clear.
+
 
 ```{r}
 df.chi<- df.chi %>% 
-    cbind("neighbortype"=as.factor(Q7.7_access$Q7.7)) 
-Q2<-xtabs(~neighbortype+time.daysperweek+access,data = df.chi)
-#write.table(Q2,file = "ctable_time_neighbor_access.csv",row.names = TRUE,sep=",")
-Q2_gender<-xtabs(~neighbortype+time.daysperweek+gender,data = df.chi)
-assocstats(Q2_gender)
+    cbind("neighbortype"=as.factor(Q7.7_access$Q7.7)) %>% 
+    cbind("accessscore"= as.factor(Q7.7_access$access.score))
+
+df.chi$neighbortype<-factor(df.chi$neighbortype,levels = c("Rural area","Small town or village (e.g., Trumansburg, Lansing)" ,"Suburb or just outside an urban center (e.g, Cayuga Heights, East Ithaca)","Smaller city or urban center (e.g. Ithaca, Elmira)" ,"Larger city or urban center (e.g., Syracuse, NYC)"), labels = c("Rurl","Smlltwn","Sbrb","Smllcty","Lrgcty"))
+levels(df.chi$neighbortype)
+Q1.1<-xtabs(~accessscore + neighbortype,data=df.chi)
+Q1.1
+CMHtest(Q1.1)
+Q1.2<-xtabs(~outdoorsathome + neighbortype,data=df.chi)
+Q1.2
+CMHtest(Q1.2)
+Q1.3<-xtabs(~outdoorsnearhome + neighbortype,data=df.chi)
+Q1.3_nlarge = Q1.3[-8,-5]
+Q1.3
+Q1.3_nlarge
+CMHtest((Q1.3_nlarge))
+dtry<-as.data.frame(Q1.3_nlarge)
+#ggplot(data = df.chi,aes(neighbortype,as.numeric(outdoorsnearhome)))+
+#  geom_boxplot()
+Q1.4<-xtabs(~divesitynearhome + neighbortype,data=df.chi)
+CMHtest((Q1.4))
+Q1.2
+CrossTable(Q1.2,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
+sieve(Q1.2,shade = TRUE)
 
 
 ```
 
 
-d.	Does access at or near home OR diversity of spaces near home correlate to TOTAL TIME outdoors (in any of the 3 time periods) 
+c1. Is access a moderator b/w use or time outdoors and neighborhood type?
+For this question, it is not very clear what access indicates here.
+So I simplify this question:
+What is the relationship between time outdoors and neighborhood type?
+Time
+Time.daysperweek:
+The level of days go outside every week.
+Time.hourspertime:
+The level of hours go outside each time.
+
+There is correlation between time ourtdoors perweek and neighborhood.
+
+
 ```{r}
 
+Q2.1<-xtabs(~neighbortype+time.daysperweek,data = df.chi)
+CMHtest(Q2.1)
+sieve(Q2.1,shade = TRUE)
+Q2.2<-xtabs(~neighbortype+time.hourspertime,data = df.chi)
+CMHtest(Q2.2)
+sieve(Q2.2,shade=TRUE)
+#Q2_gender<-xtabs(~neighbortype+time.daysperweek+gender,data = df.chi)
+#assocstats(Q2_gender)
+#chisq.test(table(df.chi$neighbortype,df.chi$time.daysperweek))
+fisher.test(Q2.1,simulate.p.value=TRUE,B=1e5)
+fisher.test(Q2.2,simulate.p.value = TRUE,B=1e5)
+```
+
+
+d.	Does access at or near home OR diversity of spaces near home correlate to TOTAL TIME outdoors (in any of the 3 time periods)
+
+
+```{r}
+Q1.d1<-xtabs(~outdoorsathome+time.daysperweek,data = df.chi)
+CMHtest(Q1.d1)
+Q1.d2<-xtabs(~outdoorsathome+time.hourspertime,data = df.chi)
+CMHtest(Q1.d2)
+sieve(Q1.d1,shade=TRUE)
+Q1.d3<-xtabs(~outdoorsnearhome+time.daysperweek,data = df.chi)
+CMHtest(Q1.d3)
+sieve(Q1.d3,shade=TRUE)
+Q1.d4<-xtabs(~outdoorsnearhome+time.hourspertime,data = df.chi)
+CMHtest(Q1.d4)
+Q1.d5<-xtabs(~divesitynearhome+time.daysperweek,data = df.chi)
+CMHtest(Q1.d5)
+sieve(Q1.d5,shade=TRUE)
+Q1.d6<-xtabs(~divesitynearhome+time.hourspertime,data = df.chi)
+CMHtest(Q1.d6)
+sieve(Q1.d6,shade=TRUE)
 ```
 
 e.	Access change pre to post covid – within subjects and across subjects 
-```{r}
+This question is actually asking:
+1. Use change pre to post covid within subjects significant?
+2. Use change pre to post covid in total significant?
+We answer these 2 questions below in Use section.
 
+
+2. USE
+
+a. Use change pre to post covid within subjects significant?
+We use paired-test and treat the total number of types of place used as a continous variable. The test showed after COVID, space use is significantly less (0.19, p = 0.03)
+
+```{r}
+res <- t.test(Q2.4.score$use.score.before, Q2.4.score$use.score.after, paired = TRUE)
+res
+
+boxplot(Q2.4.score$use.score.before, Q2.4.score$use.score.after)
 ```
-a.	Does access relate to use (Q2.4) – correlation between TOTAL TIME outdoors (Fall 2020) and: [TABLE]
+
+b. Use change pre to post covid in total significant?
+
+```{r}
+Q2.4.sum %>% 
+  ggplot(mapping = aes(x=place,y=total/483,fill=factor(time,levels = c("before","after")))) +
+  geom_bar(stat="identity",position='dodge')+
+  geom_errorbar(aes(ymin=total/483-se, ymax=total/483+se), width=.5,
+                position=position_dodge(.9)) +
+  ylab("proportion")+
+  guides(fill=guide_legend(title="Time"))+ 
+  ggtitle("Plot of place use before and after COVID")
+```
+
+
+c.	Does access relate to use (Q2.4) – correlation between TOTAL TIME outdoors (Fall 2020) and: 
 i.	Total number of spaces they can access (ACCESS TOTAL from Q2.3)
 ii.	Whether they have space ‘at home’ (new variable)
 iii.	Total number of spaces ‘outdoors near home’ (new variable)
 iv.	Whether they have 3 or more spaces outdoors near home (diversity near home - new variable) 
+
+Here, this question is confusing: I think the question is:
+Does access relates to use - correlation between the 4 access variables with total number of used places before and after- 8 correlations.
 ```{r}
+Q2.c1<-xtabs(~df.chi$outdoorsathome+Q2.4.score$use.score.before)
+Q2.c1
+CMHtest(Q2.c1)
+Q2.c2<-xtabs(~df.chi$outdoorsathome+Q2.4.score$use.score.after)
+CMHtest(Q2.c2)
+sieve(Q2.c2,shade=TRUE)
+Q2.c3<-xtabs(~df.chi$outdoorsnearhome+Q2.4.score$use.score.before)
+CMHtest(Q2.c3)
+Q2.c4<-xtabs(~df.chi$outdoorsnearhome+Q2.4.score$use.score.after)
+CMHtest(Q2.c4)
+Q2.c5<-xtabs(~df.chi$divesitynearhome+Q2.4.score$use.score.before)
+CMHtest(Q2.c5)
+Q2.c6<-xtabs(~df.chi$divesitynearhome+Q2.4.score$use.score.after)
+CMHtest(Q2.c6)
+Q2.c7<-xtabs(~df.chi$accessscore+Q2.4.score$use.score.before)
+CMHtest(Q2.c7)
+Q2.c8<-xtabs(~df.chi$accessscore+Q2.4.score$use.score.after)
+CMHtest(Q2.c8)
+
 
 ```
-b.	Compare each above to time outdoors since covid emerged (Q2.8) and in Fall 2019 (Q2.10)
+
+d.	Compare each above to time outdoors since covid emerged (Q2.8) and in Fall 2019 (Q2.10)
+
 ```{r}
+raw %>% 
+  ggplot(mapping = aes(x=Q2.8))+
+  geom_bar()+
+  ggtitle("time outdoors since covid emerged")
+raw %>% 
+  ggplot(mapping = aes(x=Q2.10))+
+  geom_bar()+
+  ggtitle("time outdoors in Fall 2019")
+
+
+CrossTable(raw$Q2.8,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
+CrossTable(raw$Q2.10,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
 
 ```
-c.	Does use (ie time outdoors) correlate with any of the following: [TABLE]
+
+e.	Does use (ie time outdoors) correlate with any of the following: 
 i.	Gender (Q7.2)
 ii.	Neighborhood type (Q7.7)
 iii.	Race (7.8)
@@ -765,9 +940,126 @@ vii.	TOTAL COMPANIONS
 viii.	FEEL ABOUT NATURE TOTAL
 ix.	FEEL AFTER NATURE TOTAL 
 ```{r}
+df.cor<-as.data.frame(cbind(raw$Q5.2,raw$Q7.2,raw$Q7.3,raw$Q7.7,Q6.2$total_household,Q6.2$children,Q4.4$score,Q4.3$score,Q5.7$total_barriers,raw$Q2.5,raw$Q2.6))
+colnames(df.cor)<-c("out_week","gender","workyrs","neighbor","household","children","naturefeel","nature_after_feel","barriers","week_out","out_time")
+#round(cor(df.cor,use="pairwise.complete.obs"),digits =3)
+ltm::rcor.test(df.cor,use="pairwise.complete.obs")
+
+
 
 ```
-d.	Changes in use of spaces pre to post covid – within and across subjects
+f.	Changes in use of spaces pre to post covid – within and across subjects
+```{r}
+
+```
+
+
+3. WORK
+
+a. Did staff typically spend time outdoors during the workday (Q5.2)? 
+```{r}
+raw0 %>% 
+  ggplot(mapping = aes(x=Q5.2))+
+  geom_bar()+
+  ggtitle("staff typically spend time outdoors during the workday")
+
+CrossTable(raw$Q5.2,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
+
+```
+
+b. what did they typically do (Q5.6)
+```{r}
+Q5.6 %>% 
+  pivot_longer(eat:others,
+               names_to = "activities",
+               values_to = "number") %>% 
+  group_by(activities) %>% 
+  summarise_all(sum) %>% 
+  ggplot(mapping = aes(x=activities,y=number)) +
+  geom_bar(stat="identity")
+
+Q5.6 %>% 
+  pivot_longer(eat:others,
+               names_to = "activities",
+               values_to = "number") %>% 
+  group_by(activities) %>% 
+  summarise_all(sum) %>% 
+  select(activities,number)
+```
+
+c. time outdoors correlation with: [TABLE]
+i.	gender
+ii.	how long worked at Cornell (Q7.3)
+iii.	type of employment (Q7.4 and 7.5)
+iv.	work outdoors (Q7.6)
+v.	neighborhood type (7.7)
+vi.	race (7.8)
+vii.	race category (new variable from 7.8)
+viii.	HOUSEHOLD TOTAL
+ix.	CHILDREN
+x.	SENIORS
+xi.	FAMILY
+xii.	FEEL ABOUT NATURE TOTAL
+xiii.	FEEL AFTER NATURE TOTAL
+xiv.	WORK BARRIERS TOTAL (new variable)
+xv.	TOTAL CAMPUS ACTIVITY 
+
+```{r}
+ltm::rcor.test(df.chi2,use="pairwise.complete.obs")
+```
+
+d. More or less time outdoors than when working from home?
+```{r}
+raw %>% 
+  ggplot(mapping = aes(x=Q5.4))+
+  geom_bar()+
+  ggtitle("More or less time outdoors than when working from home")
+CrossTable(raw$Q5.4,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
+```
+
+e. More or less than on campus pre-covid (Q5.5)
+
+```{r}
+raw %>% 
+  ggplot(mapping = aes(x=Q5.5))+
+  geom_bar()+
+  ggtitle("More or less than on campus pre-covid")
+CrossTable(raw$Q5.5,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
+
+
+```
+
+
+4. BARRIER
+
+a.	Overview of barriers
+
+```{r}
+
+```
+b.	Time (both) is correlated with total barriers – very interesting – dig a bit deeper in relation to barriers – do barriers change by nbhd type? Gender? Attitudes towards nature?
+```{r}
+
+```
+c.	Did barriers change from pre to post covid
+```{r}
+
+```
+
+5.	Who do they spend time with in nature (at home and at work and for both pre and post covid) and how did it change – within and across subjects?
+
+```{r}
+
+```
+6.	What do they do outdoors (activities) - (at home and at work and for both pre and post covid) and how did it change – within and across subjects?
+```{r}
+
+```
+7.	Why do they spend time outdoors in nature, and how did this change during covid (Q4.2)
+a.	Correlation between WHY and time outdoors
+b.	How do reasons for spending time outdoors intersect with:
+i.	Who they spent time with
+ii.	barriers
 ```{r}
 
 ```
