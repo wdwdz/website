@@ -4,8 +4,10 @@ author: "Wangda Zhu"
 date: "`r Sys.Date()`"
 output:
    html_document:
+     code_folding: hide
      theme: "spacelab"
      toc: TRUE
+     toc_depth: 3
      toc_float: TRUE
      fig_height: 4
      fig_width: 4
@@ -14,11 +16,19 @@ editor_options:
   chunk_output_type: inline
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+```{css, echo=FALSE}
+.scroll-100 {
+  max-width: 700px;
+  overflow-x: auto;
+  background-color: inherit;
+}
 ```
 
-## Workflow
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE, message=FALSE)
+```
+
+# DATA WRANGLING
 
 This is a workflow of analyzing survey data from Qualtrics. When exporting data from Qualtrics, make sure to select "Use choice text" and "Split multi-value fields into columns" and export the data as csv file. 
 
@@ -707,7 +717,7 @@ psy::cronbach(Q4.4[,1:3])
 
 
 ```
-## 9 Below are answers to specific questions
+# ANALYSIS
 
 Cochran-Mantel-Haenszel statistics (Landis etal., 1978)
 a. CMH correlation statistic ("cor"), treating both factors as ordered. For a given statum, with equally spaced row and column scores, this CMH statistic reduces to (n-1) r^2, where r is the Pearson correlation between X and Y. With "midrank" scores, this CMH statistic is analogous to (n-1) r_S^2, using the Spearman rank correlation.
@@ -725,9 +735,7 @@ Sieve diagram
 Riedwyl and Schüpbach (1983, 1994) proposed a sieve diagram (later called a parquet diagram ) based on this principle. In this display the area of each rectangle is proportional to expected frequency and observed frequency is shown by the number of squares in each rectangle. Hence, the difference between observed and expected frequency appears as the density of shading, using color to indicate whether the deviation from independence is positive or negative. 
 
 
-# BELOW ARE ANSWERS FOR EACH QUESTION: 
-
-1. ACCESS 
+## 1 Access
 
 a. What kind of outdoor/natural spaces do people have access to (Q2.3)? 
 b.what quantity and level of diversity (ie higher quantity of spaces) of access do they have Q2.3)?
@@ -854,7 +862,7 @@ This question is actually asking:
 We answer these 2 questions below in Use section.
 
 
-2. USE
+## 2 Use
 
 a. Use change pre to post covid within subjects significant?
 We use paired-test and treat the total number of types of place used as a continous variable. The test showed after COVID, space use is significantly less (0.19, p = 0.03)
@@ -913,7 +921,7 @@ CMHtest(Q2.c8)
 
 d.	Compare each above to time outdoors since covid emerged (Q2.8) and in Fall 2019 (Q2.10)
 
-```{r}
+```{r, class.output="scroll-100"}
 raw %>% 
   ggplot(mapping = aes(x=Q2.8))+
   geom_bar()+
@@ -939,7 +947,7 @@ vi.	People in the household : HOUSEHOLD TOTAL, CHILDREN, SENIORS or FAMILY
 vii.	TOTAL COMPANIONS
 viii.	FEEL ABOUT NATURE TOTAL
 ix.	FEEL AFTER NATURE TOTAL 
-```{r}
+```{r, class.output="scroll-100"}
 df.cor<-as.data.frame(cbind(raw$Q5.2,raw$Q7.2,raw$Q7.3,raw$Q7.7,Q6.2$total_household,Q6.2$children,Q4.4$score,Q4.3$score,Q5.7$total_barriers,raw$Q2.5,raw$Q2.6))
 colnames(df.cor)<-c("out_week","gender","workyrs","neighbor","household","children","naturefeel","nature_after_feel","barriers","week_out","out_time")
 #round(cor(df.cor,use="pairwise.complete.obs"),digits =3)
@@ -954,7 +962,7 @@ f.	Changes in use of spaces pre to post covid – within and across subjects
 ```
 
 
-3. WORK
+## 3 Work
 
 a. Did staff typically spend time outdoors during the workday (Q5.2)? 
 ```{r}
@@ -1004,7 +1012,7 @@ xiii.	FEEL AFTER NATURE TOTAL
 xiv.	WORK BARRIERS TOTAL (new variable)
 xv.	TOTAL CAMPUS ACTIVITY 
 
-```{r}
+```{r, class.output="scroll-100"}
 ltm::rcor.test(df.chi2,use="pairwise.complete.obs")
 ```
 
@@ -1030,36 +1038,117 @@ CrossTable(raw$Q5.5,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
 ```
 
 
-4. BARRIER
+## 4 Barrier
 
 a.	Overview of barriers
 
 ```{r}
+Q5.7 %>% 
+  pivot_longer(nointerest:others,
+               names_to = "barriers",
+               values_to = "number") %>% 
+  group_by(barriers) %>% 
+  summarise_all(sum) %>% 
+  ggplot(mapping = aes(x=barriers,y=number)) +
+  geom_bar(stat="identity")
+
+Q5.7.sum<-Q5.7 %>% 
+  pivot_longer(nointerest:others,
+               names_to = "barriers",
+               values_to = "number") %>% 
+  group_by(barriers) %>% 
+  summarise_all(sum) %>% 
+  select(barriers,number)
+
+Q5.7.sum
+
+
 
 ```
 b.	Time (both) is correlated with total barriers – very interesting – dig a bit deeper in relation to barriers – do barriers change by nbhd type? Gender? Attitudes towards nature?
+b1. Time.daysperweek and Time.hourspertime and total barriers:
+Time.daysperweek NOT correlated with total barriers;
+Time.hourspertime and total barriers are correlated with marginal significance. 
+
 ```{r}
+Q4.b1<-xtabs(~df.chi$time.daysperweek+Q5.7$total_barriers)
+CMHtest(Q4.b1)
+Q4.b2<-xtabs(~df.chi$time.hourspertime+Q5.7$total_barriers)
+CMHtest(Q4.b2)
+Q4.b2
+fisher.test(Q4.b2,simulate.p.value=TRUE,B=1e5)
+CMHtest(Q4.b2[-1,c(-5,-6)])
+sieve(Q4.b2[-1,c(-5,-6)],shade=TRUE)
+```
+
+b2. do barriers change by nbhd type? Gender? Attitudes towards nature?
+```{r}
+Q4.b21<-xtabs(~df.chi$neighbortype+Q5.7$total_barriers)
+Q4.b21
+CMHtest(Q4.b21)
+sieve(Q4.b21[-5,c(-5,-6)],shade = TRUE)
+
+Q4.b22<-xtabs(~df.chi$gender+Q5.7$total_barriers)
+Q4.b22
+CMHtest(Q4.b22)
+
+Q4.b23<-xtabs(~df.cor$naturefeel+Q5.7$total_barriers)
+Q4.b23
+CMHtest(Q4.b23)
+
+Q4.b24<-xtabs(~df.cor$nature_after_feel+Q5.7$total_barriers)
+CMHtest(Q4.b24)
+boxplot(df.cor$nature_after_feel~Q5.7$total_barriers)
+
 
 ```
+
+
 c.	Did barriers change from pre to post covid
+
+I do not know where to find the coresponding question in the survey.
 ```{r}
 
 ```
 
-5.	Who do they spend time with in nature (at home and at work and for both pre and post covid) and how did it change – within and across subjects?
+## 5 Other questions
+a.	Who do they spend time with in nature (at home and at work and for both pre and post covid) and how did it change – within and across subjects?
 
 ```{r}
 
 ```
-6.	What do they do outdoors (activities) - (at home and at work and for both pre and post covid) and how did it change – within and across subjects?
+b.	What do they do outdoors (activities) - (at home and at work and for both pre and post covid) and how did it change – within and across subjects?
 ```{r}
 
 ```
-7.	Why do they spend time outdoors in nature, and how did this change during covid (Q4.2)
+c.	Why do they spend time outdoors in nature, and how did this change during covid (Q4.2)
 a.	Correlation between WHY and time outdoors
 b.	How do reasons for spending time outdoors intersect with:
 i.	Who they spent time with
 ii.	barriers
+```{r}
+
+```
+
+d.	Is there a connection between people’s motivation for  spending time in nature (Q4.2) attitudes towards nature (Q4.4) OR perceived benefits (Q4.3) and time spent outdoors [both per and post covid] (Q2.5 to 2.10) – does this differ for any demographic groups
+
+```{r}
+
+```
+
+e.	By neighborhood type are their changes in the number and type of places used pre to post covid, and within and across subjects
+```{r}
+
+```
+
+f.	Is there increased contact with nature as a result of covid?
+```{r}
+
+```
+
+g.	More using outdoors early in the pandemic versus Fall 2020, and Fall 2020 went somewhat back to Fall 2019 levels
+a.	What does this intersect with – attitudes?
+
 ```{r}
 
 ```
