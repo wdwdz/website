@@ -938,6 +938,7 @@ CrossTable(raw$Q2.10,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
 ```
 
 e.	Does use (ie time outdoors) correlate with any of the following: 
+
 i.	Gender (Q7.2)
 ii.	Neighborhood type (Q7.7)
 iii.	Race (7.8)
@@ -947,6 +948,9 @@ vi.	People in the household : HOUSEHOLD TOTAL, CHILDREN, SENIORS or FAMILY
 vii.	TOTAL COMPANIONS
 viii.	FEEL ABOUT NATURE TOTAL
 ix.	FEEL AFTER NATURE TOTAL 
+
+For the correlation table, the assumption is to treated all variables as ordered variables. It makes sense for binary variables like gender, counts like total number, scale scores like feel about nature total; but NOT for categorical variables like race. For some variables like neighborhood type, it may make sense. The correlation is calculates as Spearman Correlation. 
+
 ```{r, class.output="scroll-100"}
 df.cor<-as.data.frame(cbind(raw$Q5.2,raw$Q7.2,raw$Q7.3,raw$Q7.7,Q6.2$total_household,Q6.2$children,Q4.4$score,Q4.3$score,Q5.7$total_barriers,raw$Q2.5,raw$Q2.6))
 colnames(df.cor)<-c("out_week","gender","workyrs","neighbor","household","children","naturefeel","nature_after_feel","barriers","week_out","out_time")
@@ -995,7 +999,8 @@ Q5.6 %>%
   select(activities,number)
 ```
 
-c. time outdoors correlation with: [TABLE]
+c. time outdoors correlation with: 
+
 i.	gender
 ii.	how long worked at Cornell (Q7.3)
 iii.	type of employment (Q7.4 and 7.5)
@@ -1064,6 +1069,7 @@ Q5.7.sum
 
 
 
+
 ```
 b.	Time (both) is correlated with total barriers – very interesting – dig a bit deeper in relation to barriers – do barriers change by nbhd type? Gender? Attitudes towards nature?
 b1. Time.daysperweek and Time.hourspertime and total barriers:
@@ -1114,40 +1120,173 @@ I do not know where to find the coresponding question in the survey.
 ## 5 Other questions
 a.	Who do they spend time with in nature (at home and at work and for both pre and post covid) and how did it change – within and across subjects?
 
+Total types of companions are significantly fewer.
+For each type of companion, the before and after are still correlated.
+Workmates and friends are significantly decreasing during COVID.
+
 ```{r}
+Q3.3 %>% 
+  pivot_longer(total_before:total_during,
+               names_to = "time",
+               values_to = "number") %>% 
+  ggplot(mapping = aes(x=number,fill=time)) +
+  geom_bar(stat="count",position='dodge')
+
+Q3.3.sum<-Q3.3 %>% 
+  pivot_longer(myself_before:others_during,
+               names_to = "people",
+               values_to = "number") %>% 
+  group_by(people) %>% 
+  summarise_all(sum) 
+
+Q3.3.sum%>% 
+  ggplot(mapping = aes(x=people,y=number)) +
+  geom_bar(stat="identity")+
+  theme(axis.text.x = element_text(size=10,angle = 90,hjust=.5,vjust=.5,face="plain"))
+
+Q3.3.sum[,c(1,4)]
+
+res2 <- t.test(Q3.3$total_before, Q3.3$total_during, paired = TRUE)
+res2
+boxplot(Q3.3$total_before, Q3.3$total_during)
+
+Q5.a<-xtabs(~Q3.3$family_before+ Q3.3$family_during)
+Q5.a
+chisq.test(Q5.a)
+sieve(Q5.a,shade = TRUE)
+
+Q5.a2<-xtabs(~Q3.3$myself_before+ Q3.3$myself_during)
+Q5.a2
+chisq.test(Q5.a2)
+sieve(Q5.a2,shade = TRUE)
+
+Q5.a3<-xtabs(~Q3.3$friends_before+ Q3.3$friends_during)
+Q5.a3
+chisq.test(Q5.a3)
+sieve(Q5.a3,shade = TRUE)
+
+Q5.a4<-xtabs(~Q3.3$workmates_before+ Q3.3$workmates_during)
+Q5.a4
+chisq.test(Q5.a4)
+sieve(Q5.a4,shade = TRUE)
+
 
 ```
 b.	What do they do outdoors (activities) - (at home and at work and for both pre and post covid) and how did it change – within and across subjects?
+
+Q5.6 is about what typicaly do on campus
+
 ```{r}
+Q5.6 %>% 
+  pivot_longer(eat:others,
+               names_to = "activities",
+               values_to = "number") %>% 
+  group_by(activities) %>% 
+  summarise_all(sum) %>% 
+  ggplot(mapping = aes(x=activities,y=number)) +
+  geom_bar(stat="identity")
+
+Q5.6.sum<-Q5.6 %>% 
+  pivot_longer(eat:others,
+               names_to = "activities",
+               values_to = "number") %>% 
+  group_by(activities) %>% 
+  summarise_all(sum)
+
+Q5.6.sum[,c(1,3)]
+```
+
+Q 3.2 is asking what activities typically do before and during covid?
+
+Total number of types of activities is signifianctly decreasing but the amount is not large (0.2). 
+Restorative activities are increasing while social activities are decreasing during the COVID.
+```{r}
+Q3.2 %>% 
+  pivot_longer(total_before:total_during,
+               names_to = "time",
+               values_to = "number") %>% 
+  ggplot(mapping = aes(x=number,fill=time)) +
+  geom_bar(stat="count",position='dodge')
+Q3.2 %>% 
+  pivot_longer(social_before:others_during,
+               names_to = "activity",
+               values_to = "number") %>% 
+  group_by(activity) %>% 
+  summarise_all(sum) %>% 
+  ggplot(mapping = aes(x=activity,y=number)) +
+  geom_bar(stat="identity")+
+  theme(axis.text.x = element_text(size=10,angle = 90,hjust=.5,vjust=.5,face="plain"))
+
+res3 <- t.test(Q3.2$total_before, Q3.2$total_during, paired = TRUE)
+res3
+boxplot(Q3.2$total_before, Q3.2$total_during)
+mean(Q3.2$total_before)- mean(Q3.2$total_during)
 
 ```
+
+
 c.	Why do they spend time outdoors in nature, and how did this change during covid (Q4.2)
-a.	Correlation between WHY and time outdoors
-b.	How do reasons for spending time outdoors intersect with:
+c1.	Correlation between WHY and time outdoors
+c2.	How do reasons for spending time outdoors intersect with:
 i.	Who they spent time with
 ii.	barriers
-```{r}
 
+The total number of reasons for spending time outdoors is not change.
+The c1 and c2 questions are difficult for me and I need help from Statistics.
+
+```{r}
+Q4.2 %>% 
+  pivot_longer(total_before:total_during,
+               names_to = "time",
+               values_to = "number") %>% 
+  ggplot(mapping = aes(x=number,fill=time)) +
+  geom_bar(stat="count",position='dodge')
+
+Q4.2.sum<-Q4.2 %>% 
+  pivot_longer(exercise_before:others_during,
+               names_to = "reasons",
+               values_to = "number") %>% 
+  group_by(reasons) %>% 
+  summarise_all(sum) 
+
+Q4.2.sum%>% 
+  ggplot(mapping = aes(x=reasons,y=number)) +
+  geom_bar(stat="identity")+
+  theme(axis.text.x = element_text(size=10,angle = 90,hjust=.5,vjust=.5,face="plain"))
+
+Q4.2.sum[,c(1,4)]
+
+res4 <- t.test(Q4.2$total_before, Q4.2$total_during, paired = TRUE)
+res4
 ```
 
 d.	Is there a connection between people’s motivation for  spending time in nature (Q4.2) attitudes towards nature (Q4.4) OR perceived benefits (Q4.3) and time spent outdoors [both per and post covid] (Q2.5 to 2.10) – does this differ for any demographic groups
 
+Hope to get answers for this complex questions from Statistics Consulting.
+
 ```{r}
 
 ```
 
-e.	By neighborhood type are their changes in the number and type of places used pre to post covid, and within and across subjects
-```{r}
+e.	By neighborhood type are there changes in the number and type of places used pre to post covid, and within and across subjects
 
+The total number of change is not correlated with neighborhood.
+
+```{r}
+usechange<-Q2.4.score$use.score.after-Q2.4.score$use.score.before
+Q5.e<-xtabs(~df.chi$neighbortype+usechange)
+Q5.e
+CMHtest(Q5.e)
 ```
 
 f.	Is there increased contact with nature as a result of covid?
+A difficult question.
 ```{r}
 
 ```
 
 g.	More using outdoors early in the pandemic versus Fall 2020, and Fall 2020 went somewhat back to Fall 2019 levels
-a.	What does this intersect with – attitudes?
+g1.	What does this intersect with – attitudes?
 
 ```{r}
 
