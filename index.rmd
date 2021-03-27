@@ -686,6 +686,7 @@ mapply(function(x, y) chisq.test(x, y)$p.value, df.chi2[, -2], MoreArgs=list(df.
 ```{r}
 psy::cronbach(Q4.3[,1:5])
 psy::cronbach(Q4.4[,1:3])
+
 ```
 ## 8 we do more complex data modeling like factor analysis and structural equation modeling
 ```{r}
@@ -718,33 +719,27 @@ psy::cronbach(Q4.4[,1:3])
 
 ```
 # ANALYSIS
-
-Cochran-Mantel-Haenszel statistics (Landis etal., 1978)
-a. CMH correlation statistic ("cor"), treating both factors as ordered. For a given statum, with equally spaced row and column scores, this CMH statistic reduces to (n-1) r^2, where r is the Pearson correlation between X and Y. With "midrank" scores, this CMH statistic is analogous to (n-1) r_S^2, using the Spearman rank correlation.
-b. The ANOVA (row mean scores and column mean scores) statistics, treat the columns and rows respectively as ordinal, and are sensitive to mean shifts over columns or rows. These are transforms of the F statistics from one-way ANOVAs with equally spaced scores and to Kruskal-Wallis tests with "midrank" scores.
-c. general association statistic treat both factors as unordered, and give a test closely related to the Pearson χ^2 test. When there is more than one stratum, the overall general CMH statistic gives a stratum-adjusted Pearson χ^2, equivalent to what is calculated by mantelhaen.test.
-When the value in any cell is smaller than 5, Fisher test is recommended. 
-
+<p style="color:red">The statisctic methods used in this part mainly include:</p> 
+Cochran-Mantel-Haenszel statistics (Landis etal., 1978)<br>
+a. CMH correlation statistic ("cor"), treating both factors as ordered. b. The ANOVA (row mean scores and column mean scores) statistics, treat the columns and rows respectively as ordinal, and are sensitive to mean shifts over columns or rows. c. general association statistic treat both factors as unordered, and give a test closely related to the Pearson χ^2 test. <br>
+Fisher test: when the value in any cell is smaller than 5, Fisher test is recommended. <br>
 For a 3+ way table, one table of CMH tests is produced for each combination of the factors identified as strata. If overall=TRUE, an additional table is calculated for the same two primary variables, controlling for (pooling over) the strata variables.
-
-These overall tests implicitly assume no interactions between the primary variables and the strata and they will have low power in the presence of interactions.
-
-Contigency table
-
-Sieve diagram
-Riedwyl and Schüpbach (1983, 1994) proposed a sieve diagram (later called a parquet diagram ) based on this principle. In this display the area of each rectangle is proportional to expected frequency and observed frequency is shown by the number of squares in each rectangle. Hence, the difference between observed and expected frequency appears as the density of shading, using color to indicate whether the deviation from independence is positive or negative. 
+These overall tests implicitly assume no interactions between the primary variables and the strata and they will have low power in the presence of interactions.<br>
+Sieve diagram <br>
+Riedwyl and Schüpbach (1983, 1994) proposed a sieve diagram (later called a parquet diagram ) based on this principle. In this display the area of each rectangle is proportional to expected frequency and observed frequency is shown by the number of squares in each rectangle. Hence, the difference between observed and expected frequency appears as the density of shading, using color to indicate whether the deviation from independence is positive or negative.<br>
+Paired-T test<br>
+Test if the within subject change is significant of not. The paired sample t-test has four main assumptions: The dependent variable must be continuous (interval/ratio). The observations are independent of one another. The dependent variable should be approximately normally distributed. The dependent variable should not contain any outliers.
 
 
 ## 1 Access
+<span style="background-color: #FFFF00">a. What kind of outdoor/natural spaces do people have access to (Q2.3)? <br>
+b.what quantity and level of diversity (ie higher quantity of spaces) of access do they have Q2.3)?</span>
 
-a. What kind of outdoor/natural spaces do people have access to (Q2.3)? 
-b.what quantity and level of diversity (ie higher quantity of spaces) of access do they have Q2.3)?
-
-Access: 
-ACCESS TOTAL – Recode ‘none of the above as 0, rest as ‘1’s – sum  total number of spaces checked off per person
-OUTDOORS AT HOME: Combine ‘private or shared yard’ with ‘deck balcony or patio’ – if answered yes to one of these recode as ‘1’ if answered yes to both recode as ‘2’, if didn’t check either recode as ‘0’
-OUTDOORS NEAR HOME – recode as the number of boxes checked other than the 2 in outdoors at home; if checked ‘other’ count as 1
-DIVERSITY NEAR HOME More than 3 spaces outdoors near home – create a binary category – if checked off 3 or more boxes in the ‘outdoors near home’ group
+Access has 4 veriables in this survey:<br>
+ACCESS TOTAL: total number of spaces a person can access <br>
+OUTDOORS AT HOME: whether a person's home has 'private or shared yard’ and ‘deck balcony or patio’ <br>
+OUTDOORS NEAR HOME: total number of spaces that near home a person can access<br>
+DIVERSITY NEAR HOME: whether a person can access 3 or more than 3 ourdoors near home spaces.
 
 ```{r}
 Q2.3 %>% 
@@ -767,20 +762,25 @@ Q2.3 %>%
 ```
 
 
-c. Does access (multiple variables) correlate with type of home setting (Q7.7)
-
-outdoorsathome and neighbortype are highly correlated: urban neighborhood and number of types of ourdoorsathome are signifiacantly negative correlated.
+<span style="background-color: #FFFF00">c. Does access (multiple variables) correlate with type of home setting (Q7.7)</span> <br>
+<span style="color:red">The analysis part is below:</span> <br>
+Neighbortype: types of neigborhood a person lives. It has 5 levels. We can regard it as a categorical variable without any order or a ordinal variable which has an order from rural area to large city. The levels of this is shown in the first block below. <br>
+The second block is the contingency table of neighbortype x accesstotal. The third block is CMH test on the contingency table. The first test <span style="color:red">cor</span> treats both factors as ordered, the same as Spearman rank correlation; the second and third tests <span style="color:red">rmeans and cmeans</span> treat columns and rows as ordered, the same as ANOVA tests. The last test <span style="color:red">general</span> treats both factors as non-ordered and gives the Chi-2 test result. <br>
+The rest blocks are contigency tables of each Access variable x neighbortype variable and their CMH test results accordingly. <br>
+The last block is <span style="color:red">Sieve Diagram</span>. Blue color means the cell has more count than expected if there is no correlation between the two factors. Red color means fewer counts. From this diagram, we could find the negative correlation between outdoorsathome and neighbortype. <br>
+In summary, Outdoorsathome and neighbortype are highly correlated: urban neighborhood and number of types of ourdoorsathome are signifiacantly negative correlated. <br>
 Other correlation relations are not very clear.
-
+We notice some cell has very few count values. However, even if we combine those cells together, i.e.  we combine the last twe levels of neighbortype: small city and large city together, the significance level doesn't change.
 
 ```{r}
 df.chi<- df.chi %>% 
     cbind("neighbortype"=as.factor(Q7.7_access$Q7.7)) %>% 
     cbind("accessscore"= as.factor(Q7.7_access$access.score))
+colnames(df.chi)[19]<-"accesstotal"
 
 df.chi$neighbortype<-factor(df.chi$neighbortype,levels = c("Rural area","Small town or village (e.g., Trumansburg, Lansing)" ,"Suburb or just outside an urban center (e.g, Cayuga Heights, East Ithaca)","Smaller city or urban center (e.g. Ithaca, Elmira)" ,"Larger city or urban center (e.g., Syracuse, NYC)"), labels = c("Rurl","Smlltwn","Sbrb","Smllcty","Lrgcty"))
 levels(df.chi$neighbortype)
-Q1.1<-xtabs(~accessscore + neighbortype,data=df.chi)
+Q1.1<-xtabs(~accesstotal + neighbortype,data=df.chi)
 Q1.1
 CMHtest(Q1.1)
 Q1.2<-xtabs(~outdoorsathome + neighbortype,data=df.chi)
@@ -803,18 +803,19 @@ sieve(Q1.2,shade = TRUE)
 
 ```
 
+<span style="background-color: #FFFF00">c1. Is access a moderator b/w use or time outdoors and neighborhood type?</span> <br>
 
-c1. Is access a moderator b/w use or time outdoors and neighborhood type?
-For this question, it is not very clear what access indicates here.
-So I simplify this question:
-What is the relationship between time outdoors and neighborhood type?
-Time
+For this question, I will check the moderator effect later, I am checking the a sub question here: <br>
+
+What is the relationship between time outdoors and neighborhood type? <br>
+Time has two variables:<br>
 Time.daysperweek:
 The level of days go outside every week.
-Time.hourspertime:
+Time.hourspertime: <br>
 The level of hours go outside each time.
 
-There is correlation between time ourtdoors perweek and neighborhood.
+There is correlation between time of ourtdoors perweek and neighborhood type. The Sieve diagram shows the pattern. We do Fisher test here as some cells have fewer than 5 counts. But no matter what test we do, no matter we treat the 2 factors as ordinal or catigorical variables, the correlations are significant. <br>
+The analysis part is blow:
 
 
 ```{r}
@@ -832,9 +833,10 @@ fisher.test(Q2.1,simulate.p.value=TRUE,B=1e5)
 fisher.test(Q2.2,simulate.p.value = TRUE,B=1e5)
 ```
 
+<span style="background-color: #FFFF00">d. Does access at or near home OR diversity of spaces near home correlate to TOTAL TIME outdoors (in any of the 3 time periods)</span> <br>
 
-d.	Does access at or near home OR diversity of spaces near home correlate to TOTAL TIME outdoors (in any of the 3 time periods)
-
+The time.daysperweek is highly correlated with each variable of access. <br>
+The analysis part is below:
 
 ```{r}
 Q1.d1<-xtabs(~outdoorsathome+time.daysperweek,data = df.chi)
@@ -855,17 +857,12 @@ CMHtest(Q1.d6)
 sieve(Q1.d6,shade=TRUE)
 ```
 
-e.	Access change pre to post covid – within subjects and across subjects 
-This question is actually asking:
-1. Use change pre to post covid within subjects significant?
-2. Use change pre to post covid in total significant?
-We answer these 2 questions below in Use section.
-
 
 ## 2 Use
-
-a. Use change pre to post covid within subjects significant?
-We use paired-test and treat the total number of types of place used as a continous variable. The test showed after COVID, space use is significantly less (0.19, p = 0.03)
+<span style="background-color: #FFFF00">a. Use change pre to post covid within subjects significant?</span> <br>
+Use (Q2.4) include use score before: total number of outdoors places a person use before COVID;<br>
+use score after: total number of outdoors places a person use during COVID.<br>
+We use paired-test and treat the total number of types of place used as a continous variable. The test showed after COVID, space use is significantly less, but the significance is marginal. (0.19, p = 0.03).
 
 ```{r}
 res <- t.test(Q2.4.score$use.score.before, Q2.4.score$use.score.after, paired = TRUE)
@@ -874,7 +871,9 @@ res
 boxplot(Q2.4.score$use.score.before, Q2.4.score$use.score.after)
 ```
 
-b. Use change pre to post covid in total significant?
+<span style="background-color: #FFFF00">b. Use change pre to post covid of different places in total significant?</span> <br>
+
+I am not very confident in this analysis here. In the analysis below, I treat any person using each place or not follows the same distribution and add error bars for the total use of each place. However, I am not sure if this assumption is valid in this analysis.
 
 ```{r}
 Q2.4.sum %>% 
@@ -887,15 +886,10 @@ Q2.4.sum %>%
   ggtitle("Plot of place use before and after COVID")
 ```
 
+<span style="background-color: #FFFF00">c.	Does access relate to use? </span> <br>
 
-c.	Does access relate to use (Q2.4) – correlation between TOTAL TIME outdoors (Fall 2020) and: 
-i.	Total number of spaces they can access (ACCESS TOTAL from Q2.3)
-ii.	Whether they have space ‘at home’ (new variable)
-iii.	Total number of spaces ‘outdoors near home’ (new variable)
-iv.	Whether they have 3 or more spaces outdoors near home (diversity near home - new variable) 
-
-Here, this question is confusing: I think the question is:
-Does access relates to use - correlation between the 4 access variables with total number of used places before and after- 8 correlations.
+Here, we test the correlation between the 4 access variables with total number of used places before and after- 8 correlations. <br>
+We found all correlations are significant.
 ```{r}
 Q2.c1<-xtabs(~df.chi$outdoorsathome+Q2.4.score$use.score.before)
 Q2.c1
@@ -911,15 +905,16 @@ Q2.c5<-xtabs(~df.chi$divesitynearhome+Q2.4.score$use.score.before)
 CMHtest(Q2.c5)
 Q2.c6<-xtabs(~df.chi$divesitynearhome+Q2.4.score$use.score.after)
 CMHtest(Q2.c6)
-Q2.c7<-xtabs(~df.chi$accessscore+Q2.4.score$use.score.before)
+Q2.c7<-xtabs(~df.chi$accesstotal+Q2.4.score$use.score.before)
 CMHtest(Q2.c7)
-Q2.c8<-xtabs(~df.chi$accessscore+Q2.4.score$use.score.after)
+Q2.c8<-xtabs(~df.chi$accesstotal+Q2.4.score$use.score.after)
 CMHtest(Q2.c8)
 
 
 ```
 
-d.	Compare each above to time outdoors since covid emerged (Q2.8) and in Fall 2019 (Q2.10)
+
+<span style="background-color: #FFFF00">d.Time outdoors since covid emerged (Q2.8) and in Fall 2019 (Q2.10) </span> <br>
 
 ```{r, class.output="scroll-100"}
 raw %>% 
@@ -937,7 +932,7 @@ CrossTable(raw$Q2.10,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
 
 ```
 
-e.	Does use (ie time outdoors) correlate with any of the following: 
+ <span style="background-color: #FFFF00">e.	Does time outdoors in workday and time in general correlate with any of the following: </span> <br>
 
 i.	Gender (Q7.2)
 ii.	Neighborhood type (Q7.7)
@@ -947,9 +942,12 @@ v.	HOME BARRIERS TOTAL (new variable)
 vi.	People in the household : HOUSEHOLD TOTAL, CHILDREN, SENIORS or FAMILY
 vii.	TOTAL COMPANIONS
 viii.	FEEL ABOUT NATURE TOTAL
-ix.	FEEL AFTER NATURE TOTAL 
+ix.	FEEL AFTER NATURE TOTAL <br>
 
-For the correlation table, the assumption is to treated all variables as ordered variables. It makes sense for binary variables like gender, counts like total number, scale scores like feel about nature total; but NOT for categorical variables like race. For some variables like neighborhood type, it may make sense. The correlation is calculates as Spearman Correlation. 
+out_week: time outdoors in workday <br>
+week_out: days outdoors in week<br>
+out_time: time outdoor per time<br>
+For the correlation table, the assumption is to treated all variables as ordinal variables. It makes sense for binary variables like gender, counts like total number, scale scores like feel about nature total; but NOT for categorical variables like race. For some variables like neighborhood type, it may make sense. The correlation is calculates as Spearman Correlation. 
 
 ```{r, class.output="scroll-100"}
 df.cor<-as.data.frame(cbind(raw$Q5.2,raw$Q7.2,raw$Q7.3,raw$Q7.7,Q6.2$total_household,Q6.2$children,Q4.4$score,Q4.3$score,Q5.7$total_barriers,raw$Q2.5,raw$Q2.6))
@@ -960,15 +958,10 @@ ltm::rcor.test(df.cor,use="pairwise.complete.obs")
 
 
 ```
-f.	Changes in use of spaces pre to post covid – within and across subjects
-```{r}
-
-```
-
 
 ## 3 Work
+<span style="background-color: #FFFF00">a. Did staff typically spend time outdoors during the workday (Q5.2)? </span> <br>
 
-a. Did staff typically spend time outdoors during the workday (Q5.2)? 
 ```{r}
 raw0 %>% 
   ggplot(mapping = aes(x=Q5.2))+
@@ -978,8 +971,8 @@ raw0 %>%
 CrossTable(raw$Q5.2,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
 
 ```
+<span style="background-color: #FFFF00">b. what did they typically do (Q5.6)</span> <br>
 
-b. what did they typically do (Q5.6)
 ```{r}
 Q5.6 %>% 
   pivot_longer(eat:others,
@@ -998,8 +991,7 @@ Q5.6 %>%
   summarise_all(sum) %>% 
   select(activities,number)
 ```
-
-c. time outdoors correlation with: 
+<span style="background-color: #FFFF00">c. Use in general and on campus correlation with: </span> <br>
 
 i.	gender
 ii.	how long worked at Cornell (Q7.3)
@@ -1015,13 +1007,19 @@ xi.	FAMILY
 xii.	FEEL ABOUT NATURE TOTAL
 xiii.	FEEL AFTER NATURE TOTAL
 xiv.	WORK BARRIERS TOTAL (new variable)
-xv.	TOTAL CAMPUS ACTIVITY 
+xv.	TOTAL CAMPUS ACTIVITY <br>
+
+total_campusoutdoors: Q5.6 total places use on campus<br>
+use.types.before: Q2.4 total places use before COVID<br>
+use.types.after: Q2.4 total places use during COVID<br>
+use.activities.before: Q3.2 total number of activities outdoors before COVID <br>
+use.companions.before:3.3 total number of types of companions outdoors before COVID <br>
 
 ```{r, class.output="scroll-100"}
 ltm::rcor.test(df.chi2,use="pairwise.complete.obs")
 ```
+<span style="background-color: #FFFF00">d. More or less time outdoors than when working from home? </span> <br>
 
-d. More or less time outdoors than when working from home?
 ```{r}
 raw %>% 
   ggplot(mapping = aes(x=Q5.4))+
@@ -1030,7 +1028,8 @@ raw %>%
 CrossTable(raw$Q5.4,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
 ```
 
-e. More or less than on campus pre-covid (Q5.5)
+
+<span style="background-color: #FFFF00">e. More or less than on campus pre-covid (Q5.5) </span> <br>
 
 ```{r}
 raw %>% 
@@ -1044,8 +1043,8 @@ CrossTable(raw$Q5.5,prop.chisq = FALSE,prop.c=FALSE,format = "SPSS")
 
 
 ## 4 Barrier
+<span style="background-color: #FFFF00">a.	Overview of barriers </span> <br>
 
-a.	Overview of barriers
 
 ```{r}
 Q5.7 %>% 
@@ -1071,9 +1070,11 @@ Q5.7.sum
 
 
 ```
-b.	Time (both) is correlated with total barriers – very interesting – dig a bit deeper in relation to barriers – do barriers change by nbhd type? Gender? Attitudes towards nature?
-b1. Time.daysperweek and Time.hourspertime and total barriers:
-Time.daysperweek NOT correlated with total barriers;
+
+<span style="background-color: #FFFF00">b.	Time (both) is correlated with total barriers – very interesting – dig a bit deeper in relation to barriers – do barriers change by nbhd type? Gender? Attitudes towards nature?<br>
+b1. Time.daysperweek and Time.hourspertime and total barriers: </span> <br>
+
+Time.daysperweek NOT correlated with total barriers;<br>
 Time.hourspertime and total barriers are correlated with marginal significance. 
 
 ```{r}
@@ -1086,8 +1087,11 @@ fisher.test(Q4.b2,simulate.p.value=TRUE,B=1e5)
 CMHtest(Q4.b2[-1,c(-5,-6)])
 sieve(Q4.b2[-1,c(-5,-6)],shade=TRUE)
 ```
+<br>
+<span style="background-color: #FFFF00">b2. do barriers change by nbhd type? Gender? Attitudes towards nature? </span> <br>
+The significance tests are included below:
 
-b2. do barriers change by nbhd type? Gender? Attitudes towards nature?
+
 ```{r}
 Q4.b21<-xtabs(~df.chi$neighbortype+Q5.7$total_barriers)
 Q4.b21
@@ -1110,19 +1114,12 @@ boxplot(df.cor$nature_after_feel~Q5.7$total_barriers)
 ```
 
 
-c.	Did barriers change from pre to post covid
-
-I do not know where to find the coresponding question in the survey.
-```{r}
-
-```
-
 ## 5 Other questions
-a.	Who do they spend time with in nature (at home and at work and for both pre and post covid) and how did it change – within and across subjects?
+<span style="background-color: #FFFF00">a.	Who do they spend time with in nature (at home and at work and for both pre and post covid) and how did it change – within and across subjects? </span> <br>
 
 Total types of companions are significantly fewer.
 For each type of companion, the before and after are still correlated.
-Workmates and friends are significantly decreasing during COVID.
+Workmates and friends are significantly decreasing during COVID. <br>
 
 ```{r}
 Q3.3 %>% 
@@ -1172,9 +1169,9 @@ sieve(Q5.a4,shade = TRUE)
 
 
 ```
-b.	What do they do outdoors (activities) - (at home and at work and for both pre and post covid) and how did it change – within and across subjects?
+<br><span style="background-color: #FFFF00">b.	What do they do outdoors (activities) - (at home and at work and for both pre and post covid) and how did it change – within and across subjects? </span> <br>
 
-Q5.6 is about what typicaly do on campus
+Q5.6 is about what typicaly do on campus, I don't know how to do the test now, may do it in the future.
 
 ```{r}
 Q5.6 %>% 
@@ -1195,8 +1192,7 @@ Q5.6.sum<-Q5.6 %>%
 
 Q5.6.sum[,c(1,3)]
 ```
-
-Q 3.2 is asking what activities typically do before and during covid?
+Q 3.2 is asking what activities typically do before and during covid?<br>
 
 Total number of types of activities is signifianctly decreasing but the amount is not large (0.2). 
 Restorative activities are increasing while social activities are decreasing during the COVID.
@@ -1224,12 +1220,11 @@ mean(Q3.2$total_before)- mean(Q3.2$total_during)
 
 ```
 
-
-c.	Why do they spend time outdoors in nature, and how did this change during covid (Q4.2)
-c1.	Correlation between WHY and time outdoors
-c2.	How do reasons for spending time outdoors intersect with:
+<span style="background-color: #FFFF00">c.	Why do they spend time outdoors in nature, and how did this change during covid (Q4.2)<br>
+c1.	Correlation between WHY and time outdoors<br>
+c2.	How do reasons for spending time outdoors intersect with:<br>
 i.	Who they spent time with
-ii.	barriers
+ii.	barriers</span> <br>
 
 The total number of reasons for spending time outdoors is not change.
 The c1 and c2 questions are difficult for me and I need help from Statistics.
@@ -1260,7 +1255,7 @@ res4 <- t.test(Q4.2$total_before, Q4.2$total_during, paired = TRUE)
 res4
 ```
 
-d.	Is there a connection between people’s motivation for  spending time in nature (Q4.2) attitudes towards nature (Q4.4) OR perceived benefits (Q4.3) and time spent outdoors [both per and post covid] (Q2.5 to 2.10) – does this differ for any demographic groups
+<span style="background-color: #FFFF00">d.	Is there a connection between people’s motivation for  spending time in nature (Q4.2) attitudes towards nature (Q4.4) OR perceived benefits (Q4.3) and time spent outdoors [both per and post covid] (Q2.5 to 2.10) – does this differ for any demographic groups </span> <br>
 
 Hope to get answers for this complex questions from Statistics Consulting.
 
@@ -1268,7 +1263,9 @@ Hope to get answers for this complex questions from Statistics Consulting.
 
 ```
 
-e.	By neighborhood type are there changes in the number and type of places used pre to post covid, and within and across subjects
+<span style="background-color: #FFFF00">
+e.	By neighborhood type are there changes in the number and type of places used pre to post covid, and within and across subjects</span> <br>
+
 
 The total number of change is not correlated with neighborhood.
 
@@ -1279,14 +1276,12 @@ Q5.e
 CMHtest(Q5.e)
 ```
 
-f.	Is there increased contact with nature as a result of covid?
-A difficult question.
-```{r}
-
-```
-
+<span style="background-color: #FFFF00"> f.	Is there increased contact with nature as a result of covid?
+A difficult question.<br>
 g.	More using outdoors early in the pandemic versus Fall 2020, and Fall 2020 went somewhat back to Fall 2019 levels
-g1.	What does this intersect with – attitudes?
+g1.	What does this intersect with – attitudes?</span> <br>
+
+NOT done yet.
 
 ```{r}
 
