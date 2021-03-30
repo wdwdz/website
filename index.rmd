@@ -730,6 +730,9 @@ Riedwyl and Schüpbach (1983, 1994) proposed a sieve diagram (later called a par
 Paired-T test<br>
 Test if the within subject change is significant of not. The paired sample t-test has four main assumptions: The dependent variable must be continuous (interval/ratio). The observations are independent of one another. The dependent variable should be approximately normally distributed. The dependent variable should not contain any outliers.
 
+![Relationship framework.](framework.png)
+
+
 
 ## 1 Access
 <span style="background-color: #FFFF00">a. What kind of outdoor/natural spaces do people have access to (Q2.3)? <br>
@@ -947,7 +950,8 @@ ix.	FEEL AFTER NATURE TOTAL <br>
 out_week: time outdoors in workday <br>
 week_out: days outdoors in week<br>
 out_time: time outdoor per time<br>
-For the correlation table, the assumption is to treated all variables as ordinal variables. It makes sense for binary variables like gender, counts like total number, scale scores like feel about nature total; but NOT for categorical variables like race. For some variables like neighborhood type, it may make sense. The correlation is calculates as Spearman Correlation. 
+For the correlation table, the assumption is to treated all variables as ordinal variables. It makes sense for binary variables like gender, counts like total number, scale scores like feel about nature total; but NOT for categorical variables like race. For some variables like neighborhood type, it may make sense. The correlation is calculates as Spearman Correlation. <br>
+But we need to be caustious on this correlation table as i am not very clear about the calculation now: some tests are not significant in chi2 test but significant here and I do not know the reason.
 
 ```{r, class.output="scroll-100"}
 df.cor<-as.data.frame(cbind(raw$Q5.2,raw$Q7.2,raw$Q7.3,raw$Q7.7,Q6.2$total_household,Q6.2$children,Q4.4$score,Q4.3$score,Q5.7$total_barriers,raw$Q2.5,raw$Q2.6))
