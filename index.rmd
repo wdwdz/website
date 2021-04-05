@@ -305,7 +305,7 @@ Q7.8<- raw %>%
 
 ```
 ## 3 we visulize some basic data
-```{r warning=FALSE}
+```{r warning=FALSE,fig.show="hide"}
 Q2.3 %>% 
   ggplot(mapping = aes(x=as.factor(access.score))) +
   geom_bar(stat="count",position='dodge')
@@ -378,7 +378,7 @@ Q5.6 %>%
 ```
 
 ## 4 we visulize before and after multi choice questions, we take Q2.4 for example
-```{r}
+```{r fig.show="hide"}
 Q2.4<- raw %>% 
   select(contains( "Q2.4")) %>% 
   mutate(private=case_when(is.na(Q2.4.1_1_1)==TRUE & is.na(Q2.4.1_1_2)==TRUE ~ 1,
@@ -507,7 +507,7 @@ Q2.4_demo %>% ggplot(mapping = aes(x=workyear,fill=factor(changedirection)))+
 ```
 
 ## 5 we do basic correlation calculation for continous, ordinal and binary data, there are different sorts of correlations between different types of variables
-```{r warning=FALSE}
+```{r warning=FALSE,results="hide"}
 #correlatio between spend time outdoors during the workday,
 #gender(0/1), how long at cornell, neighborhood type,
 #household total, children, feel1, feel2, work barriers total, 
@@ -575,7 +575,7 @@ ltm::rcor.test(df.cor,use="pairwise.complete.obs")
 
 ```
 ## 6 we do basic statistic tests for norminal,ordinal and binary data such as chi2 test
-```{r warning=FALSE}
+```{r warning=FALSE,results="hide"}
 # Q1
 #CORRELATION BETWEEN ORDINAL AND ORDINAL
 #                    ORDINAL AND NORMINAL
@@ -683,7 +683,7 @@ mapply(function(x, y) chisq.test(x, y)$p.value, df.chi2[, -2], MoreArgs=list(df.
 
 ```
 ## 7 we do reliability test for likert data
-```{r}
+```{r results="hide"}
 psy::cronbach(Q4.3[,1:5])
 psy::cronbach(Q4.4[,1:3])
 
